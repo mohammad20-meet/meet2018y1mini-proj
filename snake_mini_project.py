@@ -11,9 +11,8 @@ import random #We'll need this later in the lab
 
 turtle.tracer(1,0) #This helps the turtle move more smoothly
 
-SIZE_X=800
-SIZE_Y=500
-turtle.setup(SIZE_X, SIZE_Y) #Curious? It's the turtle window  
+SIZE_X=1000
+SIZE_Y=1000  
                              #size. 
 turtle.penup()
 
@@ -25,7 +24,28 @@ pos_list = []
 stamp_list = []
 food_pos = []
 food_stamps = []
+score = 0
 
+border = turtle.clone()
+border.penup()
+border.goto(300,-300)
+border.pendown()
+border.goto(300,300)
+border.goto(-300,300)
+border.goto(-300,-300)
+border.goto(300,-300)
+border.hideturtle()
+
+title=border.clone()
+title.penup()
+title.goto(0, 300)
+title.pendown()
+title.write("Snake Game",align="center",font= ("arial", 70 , "normal"))
+
+border.penup()
+border.goto(0,-400)
+border.pendown()
+border.write(str(score) ,align="center",font= ("arial",70,"normal"))
 #Set up positions (x,y) of boxes that make up the snake
 snake = turtle.clone()
 snake.shape("square")
@@ -76,11 +96,10 @@ LEFT = 3
 ####WRITE YOUR CODE HERE!!
 
 direction = UP
-UP_EDGE = 250
-DOWN_EDGE = -250
-RIGHT_EDGE = 400
-LEFT_EDGE = -400
-
+UP_EDGE = 300
+DOWN_EDGE = -300
+RIGHT_EDGE = 300
+LEFT_EDGE = -300
 
 def up():
     global direction #snake direction is global (same everywhere)
@@ -112,6 +131,44 @@ turtle.onkeypress(left, LEFT_ARROW) # Create listener for up key
 #3. Do the same for the other arrow keys
 ####WRITE YOUR CODE HERE!!
 
+
+
+turtle.register_shape("trash.gif") #Add trash picture
+                      # Make sure you have downloaded this shape 
+                      # from the Google Drive folder and saved it
+                      # in the same folder as this Python script
+
+food = turtle.clone()
+food.shape("trash.gif") 
+
+#Locations of food
+food_pos = [(100,100), (-100,100), (-100,-100), (100,-100)]
+food_stamps = []
+
+for this_food_pos in food_pos :
+    food.goto(this_food_pos)
+    food_stamps.append(food.stamp())
+    food.hideturtle()
+
+
+
+    
+turtle.listen()
+
+def make_food():
+    min_x=-int(SIZE_X/4/SQUARE_SIZE)+1
+    max_x=int(SIZE_X/4/SQUARE_SIZE)-1
+    min_y=-int(SIZE_Y/4/SQUARE_SIZE)-1
+    max_y=int(SIZE_Y/4/SQUARE_SIZE)+1
+
+    food_x = random.randint(min_x,max_x)*SQUARE_SIZE
+    food_y = random.randint(min_y,max_y)*SQUARE_SIZE
+    
+    food.goto(food_x,food_y)
+    food_pos.append((food_x,food_y))
+    x=food.stamp()
+                    
+    food_stamps.append(x)
 
 turtle.listen()
 
@@ -149,9 +206,13 @@ def move_snake():
     if new_y_pos <= DOWN_EDGE:
         print("You hit the down edge! Game over!")
         quit()
+    if snake.pos() in pos_list:
+        quit()
 
-    turtle.ontimer(move_snake,TIME_STEP)
+        
+        
     
+    turtle.ontimer(move_snake,TIME_STEP)
 
 
     
@@ -166,46 +227,30 @@ def move_snake():
     pos_list.append(my_pos)
     new_stamp = snake.stamp()
     stamp_list.append(new_stamp)
+    
     ######## SPECIAL PLACE - Remember it for Part 5
     #pop zeroth element in pos_list to get rid of last the last 
     #piece of the tail
-    global food_stamps, food_pos
+    global food_stamps, food_pos,score 
     if snake.pos() in food_pos:
         food_ind=food_pos.index(snake.pos()) #What does this do?
         food.clearstamp(food_stamps[food_ind]) #Remove eaten food                 
-                                               #stamp
+        #stamp
         food_pos.pop(food_ind) #Remove eaten food position
         food_stamps.pop(food_ind) #Remove eaten food stamp
         print("You have eaten the food!")
+        score = score + 1
+        border.clear()
+        border.write(str(score) ,align="center",font= ("arial",70,"normal"))
+        
+    else :
         
 
-    old_stamp = stamp_list.pop(0)
-    snake.clearstamp(old_stamp)
-    pos_list.pop(0)
+        old_stamp = stamp_list.pop(0)
+        snake.clearstamp(old_stamp)
+        pos_list.pop(0)
+        if len(food_stamps) <= 6 :
+            make_food()
+        
+
 move_snake()
-
-turtle.register_shape("trash.gif") #Add trash picture
-                      # Make sure you have downloaded this shape 
-                      # from the Google Drive folder and saved it
-                      # in the same folder as this Python script
-
-food = turtle.clone()
-food.shape("trash.gif") 
-
-#Locations of food
-food_pos = [(100,100), (-100,100), (-100,-100), (100,-100)]
-food_stamps = []
-
-for this_food_pos in food_pos :
-    food.goto(this_food_pos)
-    food_stamps.append(food.stamp())
-    food.hideturtle()
-
-turtle.ontimer(move_snake,TIME_STEP)
-
-
-
-
-
-
-
